@@ -8,6 +8,7 @@ from confluent_kafka import Consumer, KafkaError, Message
 from pydantic import BaseModel, ValidationError
 
 from event_driven.domain.events import AbstractEvent
+from event_driven.domain.ports import AbstractQueue
 
 
 class KafkaReceiverConfig(BaseModel):
@@ -37,11 +38,18 @@ class KafkaReceiverConfig(BaseModel):
 class KafkaReceiver:
     """Kafka implementation of a consumer"""
 
-    def __init__(self, kafka_receiver_config: KafkaReceiverConfig, topics: list[str], consumer: Consumer | None = None):
+    def __init__(
+        self,
+        kafka_receiver_config: KafkaReceiverConfig,
+        topics: list[str],
+        consumer: Consumer | None = None,
+        queue: AbstractQueue | None = None,
+    ):
         self.poll_timeout = kafka_receiver_config.poll_timeout
         # maybe it would be better to send the client as a param for testability
         self.consumer = consumer or Consumer(kafka_receiver_config.consumer_specs)
         self.consumer.subscribe(topics)
+        self.queue = queue
 
     def _check_once(self, event_classes: Sequence[type[AbstractEvent]]) -> bool | None:
         """Tries one time to receive a message. Returns true if an error is produced"""
@@ -92,4 +100,6 @@ class KafkaReceiver:
         )
         event = event_class.model_validate(event_json)
         print(f"Successfully received event: {event.model_dump_json(indent=4)}")
+        if self.queue is not None:
+            self.queue.put(event)
         return event

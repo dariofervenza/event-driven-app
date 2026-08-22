@@ -3,8 +3,12 @@
 from collections.abc import Sequence
 from typing import Protocol
 
+from pydantic import BaseModel
+
 from event_driven.domain.commands import QueueConfig
 from event_driven.domain.events import AbstractEvent
+
+type QueuePayload = str | dict | list | BaseModel
 
 
 class AbstractInitQueues(Protocol):
@@ -32,3 +36,13 @@ class AbstractProducer(Protocol):
 
     def flush(self):
         """Abstract method contract to flush events"""
+
+
+class AbstractQueue(Protocol):
+    """Abstract class with the contract to use queues (normal or asyncio or others)"""
+
+    def put(self, element: QueuePayload):
+        """Sends an element to the in memory queue"""
+
+    def get(self) -> QueuePayload:
+        """Extracts one element from the queue"""
