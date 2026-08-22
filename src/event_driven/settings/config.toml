@@ -1,0 +1,8 @@
+[kafka_server]
+    server_url = "localhost:9092"
+    queue_creation_timeout = 5
+
+    [[kafka_server.queues]]
+        queue_name = "test_queue"
+        num_partitions = 3
+        replication_factor = 1
