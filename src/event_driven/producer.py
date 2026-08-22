@@ -1,7 +1,7 @@
 """sends events to a queue"""
 
-from event_driven.application.handlers.random import periodically_send_random_test_event
-from event_driven.infrastructure.messagebus.producer import KafkaProducer
+from event_driven.application.handlers import periodically_send_random_test_event
+from event_driven.infrastructure.messagebus import KafkaProducer
 from event_driven.settings import CFG
 
 if __name__ == "__main__":

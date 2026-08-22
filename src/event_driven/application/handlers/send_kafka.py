@@ -1,7 +1,7 @@
 """Produce or consume test events"""
 
-from event_driven.domain.events.base_events import AbstractEvent
-from event_driven.infrastructure.messagebus.producer import AbstractProducer
+from event_driven.domain.events import AbstractEvent
+from event_driven.domain.ports import AbstractProducer
 
 
 def send_event(topic: str, event: AbstractEvent, producer: AbstractProducer):

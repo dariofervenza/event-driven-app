@@ -2,23 +2,23 @@
 
 from time import sleep
 
-from event_driven.application.handlers.queues import (
+from event_driven.application.handlers import (
     handle_queue_creation,
     handle_queue_deletion,
 )
-from event_driven.infrastructure.messagebus.create_queues import KafkaInitQueues
+from event_driven.domain.commands import CreateTopicsCommand, DeleteTopicsCommand
+from event_driven.infrastructure.messagebus import KafkaInitQueues
 from event_driven.settings import CFG
 
 if __name__ == "__main__":
     kafka = CFG.kafka_server
     queues = CFG.kafka_server.queues
     server_url = CFG.kafka_server.server_url
-    inititializator = KafkaInitQueues()
-    handle_queue_creation(kafka.queues, kafka.server_url, kafka.queue_creation_timeout, inititializator)
+    inititializator = KafkaInitQueues(kafka.queue_creation_timeout)
+    handle_queue_creation(CreateTopicsCommand.model_validate(kafka), inititializator)
     sleep(10)
+    command = DeleteTopicsCommand(topic_names=[x.queue_name for x in queues], server_url=kafka.server_url)
     handle_queue_deletion(
-        [x.queue_name for x in queues],
-        kafka.server_url,
-        kafka.queue_creation_timeout,
+        command,
         inititializator,
     )

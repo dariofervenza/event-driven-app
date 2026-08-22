@@ -3,8 +3,8 @@
 from random import randint
 from time import sleep
 
-from event_driven.domain.events.test_event import TestEvent
-from event_driven.infrastructure.messagebus.producer import AbstractProducer
+from event_driven.domain.events import TestEvent
+from event_driven.domain.ports import AbstractProducer
 
 from .send_kafka import send_event
 

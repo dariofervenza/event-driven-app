@@ -5,7 +5,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from event_driven.infrastructure.messagebus.create_queues import QueueConfig
+from event_driven.domain.commands import QueueConfig
 
 
 class KafKaConfig(BaseModel):

@@ -1,8 +1,8 @@
 """Receives kafka events"""
 
-from event_driven.application.handlers.receive_kafka import receive_events
-from event_driven.domain.events.test_event import TestEvent
-from event_driven.infrastructure.messagebus.consumer import (
+from event_driven.application.handlers import receive_events
+from event_driven.domain.events import AbstractEvent
+from event_driven.infrastructure.messagebus import (
     KafkaReceiver,
     KafkaReceiverConfig,
 )
@@ -15,5 +15,5 @@ if __name__ == "__main__":
         group_id="001",
     )
     receiver = KafkaReceiver(cfg, topics)
-    event_classes = [TestEvent]
+    event_classes = AbstractEvent.__subclasses__()
     receive_events(receiver, event_classes)

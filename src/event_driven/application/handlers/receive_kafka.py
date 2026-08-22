@@ -2,8 +2,8 @@
 
 from collections.abc import Sequence
 
-from event_driven.domain.events.base_events import AbstractEvent
-from event_driven.infrastructure.messagebus.consumer import AbstractReceiver
+from event_driven.domain.events import AbstractEvent
+from event_driven.domain.ports import AbstractReceiver
 
 
 def receive_events(receiver: AbstractReceiver, event_classes: Sequence[type[AbstractEvent]]):
