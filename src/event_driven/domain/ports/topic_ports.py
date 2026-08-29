@@ -51,6 +51,13 @@ class AbstractInMemoryQueue(Protocol):
         """Signals that the former queued task is complete."""
 
 
+class AbstractListener(Protocol):
+    """A background listener that, once started, receives events from Kafka into the in-memory queue."""
+
+    def start(self) -> None:
+        """Start the listener (runs in the background)."""
+
+
 class AbstractQueue(Protocol):
     """Abstract class with the contract to use queues (normal or asyncio or others)"""
 

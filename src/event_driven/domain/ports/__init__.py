@@ -3,6 +3,7 @@
 from .topic_ports import (
     AbstractInitQueues,
     AbstractInMemoryQueue,
+    AbstractListener,
     AbstractProducer,
     AbstractQueue,
     AbstractReceiver,
@@ -12,8 +13,9 @@ from .topic_ports import (
 __all__ = [
     "AbstractInitQueues",
     "AbstractInMemoryQueue",
+    "AbstractListener",
     "AbstractProducer",
+    "AbstractQueue",
     "AbstractReceiver",
     "QueuePayload",
-    "AbstractQueue",
 ]

@@ -4,14 +4,20 @@ from __future__ import annotations
 
 from queue import Queue
 
-from event_driven.application.handlers import ListenerThread
 from event_driven.domain.events import AbstractEvent
-from event_driven.domain.ports import AbstractInitQueues, AbstractInMemoryQueue, AbstractProducer, AbstractReceiver
+from event_driven.domain.ports import (
+    AbstractInitQueues,
+    AbstractInMemoryQueue,
+    AbstractListener,
+    AbstractProducer,
+    AbstractReceiver,
+)
 from event_driven.infrastructure.messagebus import (
     KafkaInitQueues,
     KafkaProducer,
     KafkaReceiver,
     KafkaReceiverConfig,
+    ListenerThread,
     ThreadSafeQueue,
 )
 from event_driven.settings import CFG
@@ -56,7 +62,7 @@ class DependencyContainer:
         self._producer: AbstractProducer | None = None
         self._receiver: AbstractReceiver | None = None
         self._queue: AbstractInMemoryQueue | None = in_memory_queue
-        self._listener_thread: ListenerThread | None = None
+        self._listener_thread: AbstractListener | None = None
         self._event_classes: list[type[AbstractEvent]] = []
         self._current_topic: str = ""
 
@@ -101,13 +107,12 @@ class DependencyContainer:
         return self._event_classes
 
     @property
-    def listener_thread(self) -> ListenerThread:
+    def listener_thread(self) -> AbstractListener:
         """Get the listener thread that moves events from Kafka into the in-memory queue."""
         if self._listener_thread is None:
             self._listener_thread = ListenerThread(
                 receiver=self.receiver,
                 event_classes=self.event_classes,
-                queue=self.queue,
             )
         return self._listener_thread
 
