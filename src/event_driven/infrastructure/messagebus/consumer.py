@@ -4,7 +4,7 @@ import json
 from collections.abc import Sequence
 from time import sleep
 
-from confluent_kafka import Consumer, KafkaError, Message
+from confluent_kafka import Consumer, Message
 from pydantic import BaseModel, ValidationError
 
 from event_driven.domain.events import AbstractEvent
@@ -51,16 +51,16 @@ class KafkaReceiver:
         self.consumer.subscribe(topics)
         self.queue = queue
 
-    def _check_once(self, event_classes: Sequence[type[AbstractEvent]]) -> bool | None:
-        """Tries one time to receive a message. Returns true if an error is produced"""
+    def _check_once(self, event_classes: Sequence[type[AbstractEvent]]) -> bool:
+        """Tries one time to receive a message. Returns True if an error is produced."""
         msg: Message | None = self.consumer.poll(timeout=self.poll_timeout)
         if msg is None:
             print(f"No message, sleeping {self.poll_timeout} seconds")
             sleep(self.poll_timeout)
-            return
+            return False
         if err := msg.error():
-            if err.code() == KafkaError._PARTITION_EOF:
-                return
+            if err.code() == 1006:  # KafkaError._PARTITION_EOF
+                return False
             print(f"Consumer error: {err}")
             return True
         value = msg.value()
@@ -70,11 +70,11 @@ class KafkaReceiver:
             # we should only commit when the event has been processed
             # hence we need to modify this to follow unit of work pattern
             self.consumer.commit(message=msg, asynchronous=False)
-            return
+            return False
         except ValidationError as ve:
             print(f"Schema validation failed! Bad payload: {raw_payload}\nError: {ve}")
             self.consumer.commit(message=msg, asynchronous=False)
-            return
+            return True
 
     def start_listening(self, event_classes: Sequence[type[AbstractEvent]]):
         """Start the receiver"""

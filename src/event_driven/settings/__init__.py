@@ -14,6 +14,9 @@ class KafKaConfig(BaseModel):
     server_url: str
     queue_creation_timeout: int
     queues: list[QueueConfig]
+    create_queues: bool = True
+    delete_queues: bool = True
+    producer_wait_time: int
 
 
 class AppConfig(BaseModel):

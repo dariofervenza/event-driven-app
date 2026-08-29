@@ -38,11 +38,21 @@ class AbstractProducer(Protocol):
         """Abstract method contract to flush events"""
 
 
+class AbstractInMemoryQueue(Protocol):
+    """Abstract class with the contract to use in-memory queues."""
+
+    def put(self, element: QueuePayload) -> None:
+        """Sends an element to the in memory queue."""
+
+    def get(self) -> QueuePayload:
+        """Extracts one element from the queue."""
+
+
 class AbstractQueue(Protocol):
     """Abstract class with the contract to use queues (normal or asyncio or others)"""
 
-    def put(self, element: QueuePayload):
-        """Sends an element to the in memory queue"""
+    def put(self, element: QueuePayload) -> None:
+        """Sends an element to the queue."""
 
     def get(self) -> QueuePayload:
-        """Extracts one element from the queue"""
+        """Extracts one element from the queue."""

@@ -1,11 +1,19 @@
-"""Abstract base classes and protocols"""
+"""Abstract base classes and protocols."""
 
-from .topic_ports import AbstractInitQueues, AbstractProducer, AbstractQueue, AbstractReceiver, QueuePayload
+from .topic_ports import (
+    AbstractInitQueues,
+    AbstractInMemoryQueue,
+    AbstractProducer,
+    AbstractQueue,
+    AbstractReceiver,
+    QueuePayload,
+)
 
 __all__ = [
     "AbstractInitQueues",
-    "AbstractReceiver",
+    "AbstractInMemoryQueue",
     "AbstractProducer",
+    "AbstractReceiver",
     "QueuePayload",
     "AbstractQueue",
 ]

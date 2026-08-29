@@ -1,0 +1,119 @@
+"""Dependency injection container."""
+
+from __future__ import annotations
+
+from queue import Queue
+
+from event_driven.domain.events import AbstractEvent
+from event_driven.domain.ports import AbstractInitQueues, AbstractInMemoryQueue, AbstractProducer, AbstractReceiver
+from event_driven.infrastructure.messagebus import (
+    KafkaInitQueues,
+    KafkaProducer,
+    KafkaReceiver,
+    KafkaReceiverConfig,
+    ThreadSafeQueue,
+)
+from event_driven.settings import CFG
+
+__all__ = ["DependencyContainer"]
+
+
+class DependencyContainer:
+    """Holds all instantiated infrastructure components.
+
+    Uses a class-level singleton pattern to ensure only one container
+    exists per process, with optional pre-configured in-memory queue.
+    """
+
+    # Class-level singleton instance
+    _singleton: DependencyContainer | None = None
+
+    # Class-level default in-memory queue (shared across all singleton instances)
+    _default_queue: AbstractInMemoryQueue | None = None
+
+    @classmethod
+    def get_container(cls) -> DependencyContainer:
+        """Get or create the singleton container (default, no queue)."""
+        if cls._singleton is None:
+            cls._singleton = cls()
+        return cls._singleton
+
+    @classmethod
+    def get_container_with_queue(cls) -> DependencyContainer:
+        """Get or create the singleton container with a configured in-memory queue."""
+        if cls._default_queue is None:
+            cls._default_queue = ThreadSafeQueue(Queue())
+        if cls._singleton is None:
+            cls._singleton = cls(in_memory_queue=cls._default_queue)
+        return cls._singleton
+
+    def __init__(
+        self,
+        in_memory_queue: AbstractInMemoryQueue | None = None,
+    ) -> None:
+        self._init_queues: AbstractInitQueues | None = None
+        self._producer: AbstractProducer | None = None
+        self._receiver: AbstractReceiver | None = None
+        self._queue: AbstractInMemoryQueue | None = in_memory_queue
+        self._event_classes: list[type[AbstractEvent]] = []
+        self._current_topic: str = ""
+
+    @property
+    def init_queues(self) -> AbstractInitQueues:
+        """Get the queue initializer (KafkaInitQueues)."""
+        if self._init_queues is None:
+            self._init_queues = KafkaInitQueues(CFG.kafka_server.queue_creation_timeout)
+        return self._init_queues
+
+    @property
+    def producer(self) -> AbstractProducer:
+        """Get the event producer (KafkaProducer)."""
+        if self._producer is None:
+            self._producer = KafkaProducer(server_url=CFG.kafka_server.server_url)
+        return self._producer
+
+    @property
+    def receiver(self) -> AbstractReceiver:
+        """Get the event receiver (KafkaReceiver)."""
+        if self._receiver is None:
+            topics = [q.queue_name for q in CFG.kafka_server.queues]
+            cfg = KafkaReceiverConfig(
+                server_url=CFG.kafka_server.server_url,
+                group_id="001",
+            )
+            self._receiver = KafkaReceiver(cfg, topics)
+        return self._receiver
+
+    @property
+    def queue(self) -> AbstractInMemoryQueue:
+        """Get the in-memory queue (lazy initialization)."""
+        if self._queue is None:
+            self._queue = ThreadSafeQueue(Queue())
+        return self._queue
+
+    @property
+    def event_classes(self) -> list[type[AbstractEvent]]:
+        """Get all registered event classes."""
+        if not self._event_classes:
+            self._event_classes = AbstractEvent.__subclasses__()
+        return self._event_classes
+
+    @property
+    def current_topic(self) -> str:
+        """Get the current topic name."""
+        return self._current_topic
+
+    @current_topic.setter
+    def current_topic(self, topic: str) -> None:
+        """Set the current topic name."""
+        self._current_topic = topic
+
+    def get_all(self) -> dict:
+        """Return all components as a dict for easy access."""
+        return {
+            "init_queues": self.init_queues,
+            "producer": self.producer,
+            "receiver": self.receiver,
+            "queue": self.queue,
+            "event_classes": self.event_classes,
+        }

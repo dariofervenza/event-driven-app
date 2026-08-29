@@ -1,6 +1,9 @@
 [kafka_server]
     server_url = "localhost:9092"
     queue_creation_timeout = 5
+    producer_wait_time = 8
+    create_queues = true
+    delete_queues = false
 
     [[kafka_server.queues]]
         queue_name = "test_queue"
