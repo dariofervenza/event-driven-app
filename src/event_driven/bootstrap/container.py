@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from queue import Queue
 
+from event_driven.application.handlers import ListenerThread
 from event_driven.domain.events import AbstractEvent
 from event_driven.domain.ports import AbstractInitQueues, AbstractInMemoryQueue, AbstractProducer, AbstractReceiver
 from event_driven.infrastructure.messagebus import (
@@ -42,7 +43,7 @@ class DependencyContainer:
     def get_container_with_queue(cls) -> DependencyContainer:
         """Get or create the singleton container with a configured in-memory queue."""
         if cls._default_queue is None:
-            cls._default_queue = ThreadSafeQueue(Queue())
+            cls._default_queue = ThreadSafeQueue(Queue(), timeout=CFG.application.get_inmemory_timeout)
         if cls._singleton is None:
             cls._singleton = cls(in_memory_queue=cls._default_queue)
         return cls._singleton
@@ -55,6 +56,7 @@ class DependencyContainer:
         self._producer: AbstractProducer | None = None
         self._receiver: AbstractReceiver | None = None
         self._queue: AbstractInMemoryQueue | None = in_memory_queue
+        self._listener_thread: ListenerThread | None = None
         self._event_classes: list[type[AbstractEvent]] = []
         self._current_topic: str = ""
 
@@ -62,7 +64,7 @@ class DependencyContainer:
     def init_queues(self) -> AbstractInitQueues:
         """Get the queue initializer (KafkaInitQueues)."""
         if self._init_queues is None:
-            self._init_queues = KafkaInitQueues(CFG.kafka_server.queue_creation_timeout)
+            self._init_queues = KafkaInitQueues(CFG.kafka_server.init.queue_creation_timeout)
         return self._init_queues
 
     @property
@@ -74,14 +76,14 @@ class DependencyContainer:
 
     @property
     def receiver(self) -> AbstractReceiver:
-        """Get the event receiver (KafkaReceiver)."""
+        """Get the event receiver (KafkaReceiver) with the in-memory queue."""
         if self._receiver is None:
             topics = [q.queue_name for q in CFG.kafka_server.queues]
             cfg = KafkaReceiverConfig(
                 server_url=CFG.kafka_server.server_url,
-                group_id="001",
+                **CFG.kafka_server.consume.model_dump(),
             )
-            self._receiver = KafkaReceiver(cfg, topics)
+            self._receiver = KafkaReceiver(cfg, topics, queue=self._queue)
         return self._receiver
 
     @property
@@ -97,6 +99,17 @@ class DependencyContainer:
         if not self._event_classes:
             self._event_classes = AbstractEvent.__subclasses__()
         return self._event_classes
+
+    @property
+    def listener_thread(self) -> ListenerThread:
+        """Get the listener thread that moves events from Kafka into the in-memory queue."""
+        if self._listener_thread is None:
+            self._listener_thread = ListenerThread(
+                receiver=self.receiver,
+                event_classes=self.event_classes,
+                queue=self.queue,
+            )
+        return self._listener_thread
 
     @property
     def current_topic(self) -> str:

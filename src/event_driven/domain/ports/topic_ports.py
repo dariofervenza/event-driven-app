@@ -47,6 +47,9 @@ class AbstractInMemoryQueue(Protocol):
     def get(self) -> QueuePayload:
         """Extracts one element from the queue."""
 
+    def task_done(self) -> None:
+        """Signals that the former queued task is complete."""
+
 
 class AbstractQueue(Protocol):
     """Abstract class with the contract to use queues (normal or asyncio or others)"""

@@ -9,10 +9,10 @@ if __name__ == "__main__":
     CONTAINER: DC = DC.get_container()
     init_queues = CONTAINER.init_queues
 
-    if CFG.kafka_server.create_queues:
+    if CFG.kafka_server.init.create_queues:
         handle_queue_creation(CreateTopicsCommand.model_validate(CFG.kafka_server), init_queues)
 
-    if CFG.kafka_server.delete_queues:
+    if CFG.kafka_server.init.delete_queues:
         command = DeleteTopicsCommand(
             topic_names=[x.queue_name for x in CFG.kafka_server.queues],
             server_url=CFG.kafka_server.server_url,

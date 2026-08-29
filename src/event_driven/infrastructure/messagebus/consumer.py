@@ -12,19 +12,19 @@ from event_driven.domain.ports import AbstractQueue
 
 
 class KafkaReceiverConfig(BaseModel):
-    """Config class for a kafka consumer"""
+    """Config class for a kafka consumer."""
 
     server_url: str
     group_id: str
     auto_commit: bool = False
     max_wait_time: int = 300000
-    session_timeout: int = 45000
+    session_timeout: int = 10000
     poll_timeout: float = 1.0
     default_offset: str = "earliest"
 
     @property
     def consumer_specs(self) -> dict:
-        """Transform into a valid kafka consumer input dict"""
+        """Transform into a valid kafka consumer input dict."""
         return {
             "bootstrap.servers": self.server_url,
             "group.id": self.group_id,
@@ -89,7 +89,7 @@ class KafkaReceiver:
             self.consumer.close()
 
     def process_order(self, raw_payload: str, event_classes: Sequence[type[AbstractEvent]]) -> AbstractEvent:
-        """Detect event class and transform it to a model instance"""
+        """Detect event class and transform it to a model instance."""
         try:
             event_json = json.loads(raw_payload)
         except json.JSONDecodeError:
@@ -99,7 +99,6 @@ class KafkaReceiver:
             AbstractEvent,
         )
         event = event_class.model_validate(event_json)
-        print(f"Successfully received event: {event.model_dump_json(indent=4)}")
         if self.queue is not None:
             self.queue.put(event)
         return event

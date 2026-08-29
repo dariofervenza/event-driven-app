@@ -8,7 +8,7 @@ if __name__ == "__main__":
     CONTAINER: DC = DC.get_container()
     producer = CONTAINER.producer
     periodically_send_random_test_event(
-        CFG.kafka_server.producer_wait_time,
+        CFG.kafka_server.producer.producer_wait_time,
         next(iter(CFG.kafka_server.queues)).queue_name,
         producer,
     )
