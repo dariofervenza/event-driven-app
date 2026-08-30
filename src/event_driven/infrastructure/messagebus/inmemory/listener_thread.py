@@ -3,7 +3,7 @@
 import threading
 from collections.abc import Sequence
 
-from event_driven.application.handlers.receive_kafka import receive_events
+from event_driven.application.handlers.topics import receive_events
 from event_driven.domain.events import AbstractEvent
 from event_driven.domain.ports import AbstractReceiver
 
