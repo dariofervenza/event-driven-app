@@ -13,14 +13,12 @@ from event_driven.domain.ports import (
     AbstractProducer,
     AbstractReceiver,
 )
-from event_driven.infrastructure.messagebus import (
+from event_driven.infrastructure.messagebus.inmemory import ListenerThread, TestHandler, ThreadSafeQueue
+from event_driven.infrastructure.messagebus.kafka import (
     KafkaInitQueues,
     KafkaProducer,
     KafkaReceiver,
     KafkaReceiverConfig,
-    ListenerThread,
-    TestHandler,
-    ThreadSafeQueue,
 )
 from event_driven.settings import CFG
 
