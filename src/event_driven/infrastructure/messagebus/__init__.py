@@ -5,6 +5,7 @@ from .create_queues import KafkaInitQueues
 from .listener_thread import ListenerThread
 from .producer import KafkaProducer
 from .queue import ThreadSafeQueue
+from .test_handler import TestHandler
 
 __all__ = [
     "KafkaInitQueues",
@@ -12,5 +13,6 @@ __all__ = [
     "KafkaReceiverConfig",
     "ListenerThread",
     "KafkaProducer",
+    "TestHandler",
     "ThreadSafeQueue",
 ]

@@ -1,6 +1,7 @@
 """Abstract base classes and protocols."""
 
 from .topic_ports import (
+    AbstractHandler,
     AbstractInitQueues,
     AbstractInMemoryQueue,
     AbstractListener,
@@ -11,6 +12,7 @@ from .topic_ports import (
 )
 
 __all__ = [
+    "AbstractHandler",
     "AbstractInitQueues",
     "AbstractInMemoryQueue",
     "AbstractListener",

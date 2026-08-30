@@ -58,6 +58,13 @@ class AbstractListener(Protocol):
         """Start the listener (runs in the background)."""
 
 
+class AbstractHandler(Protocol):
+    """A handler that continuously processes events from the in-memory queue."""
+
+    def handle(self) -> None:
+        """Process events from the in-memory queue."""
+
+
 class AbstractQueue(Protocol):
     """Abstract class with the contract to use queues (normal or asyncio or others)"""
 

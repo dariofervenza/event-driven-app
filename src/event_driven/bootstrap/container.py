@@ -6,6 +6,7 @@ from queue import Queue
 
 from event_driven.domain.events import AbstractEvent
 from event_driven.domain.ports import (
+    AbstractHandler,
     AbstractInitQueues,
     AbstractInMemoryQueue,
     AbstractListener,
@@ -18,6 +19,7 @@ from event_driven.infrastructure.messagebus import (
     KafkaReceiver,
     KafkaReceiverConfig,
     ListenerThread,
+    TestHandler,
     ThreadSafeQueue,
 )
 from event_driven.settings import CFG
@@ -25,6 +27,7 @@ from event_driven.settings import CFG
 __all__ = ["DependencyContainer"]
 
 
+# pylint: disable=too-many-instance-attributes
 class DependencyContainer:
     """Holds all instantiated infrastructure components.
 
@@ -63,6 +66,7 @@ class DependencyContainer:
         self._receiver: AbstractReceiver | None = None
         self._queue: AbstractInMemoryQueue | None = in_memory_queue
         self._listener_thread: AbstractListener | None = None
+        self._test_handler: AbstractHandler | None = None
         self._event_classes: list[type[AbstractEvent]] = []
         self._current_topic: str = ""
 
@@ -115,6 +119,13 @@ class DependencyContainer:
                 event_classes=self.event_classes,
             )
         return self._listener_thread
+
+    @property
+    def test_handler(self) -> AbstractHandler:
+        """Get the test handler that processes events from the in-memory queue."""
+        if self._test_handler is None:
+            self._test_handler = TestHandler(self.queue)
+        return self._test_handler
 
     @property
     def current_topic(self) -> str:
