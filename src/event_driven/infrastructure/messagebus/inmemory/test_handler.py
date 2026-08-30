@@ -1,10 +1,13 @@
 """Test handler that continuously receives events from the in-memory queue."""
 
+import logging
 import sys
 from queue import Empty
 
 from event_driven.domain.events import AbstractEvent
 from event_driven.domain.ports import AbstractInMemoryQueue
+
+logger = logging.getLogger(__name__)
 
 
 class TestHandler:
@@ -19,16 +22,16 @@ class TestHandler:
         Polls the in-memory queue with a timeout, printing received events. It
         blocks briefly when the queue is empty to avoid busy-waiting.
         """
-        print("TestHandler started. Waiting for events...")
+        logger.info("TestHandler started. Waiting for events...")
         try:
             while True:
                 try:
                     event = self.queue.get()
                     if isinstance(event, AbstractEvent):
-                        print(f"Successfully received event: {event.model_dump_json(indent=4)}")
+                        logger.info("Successfully received event: %s", event.model_dump_json(indent=4))
                     self.queue.task_done()
                 except Empty:
                     continue
         except KeyboardInterrupt:
-            print("\nTestHandler shutting down...")
+            logger.info("TestHandler shutting down...")
             sys.exit(0)

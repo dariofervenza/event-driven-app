@@ -10,6 +10,7 @@ if __name__ == "__main__":
     LOGGER.info("producer started")
     CONTAINER: DC = DC.get_container()
     producer = CONTAINER.producer
+    LOGGER.info("producer created")
     periodically_send_random_test_event(
         CFG.kafka_server.producer.producer_wait_time,
         next(iter(CFG.kafka_server.queues)).queue_name,

@@ -1,5 +1,6 @@
 """Define app topics"""
 
+import logging
 from concurrent.futures import Future
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 
@@ -7,6 +8,8 @@ from confluent_kafka import KafkaError, KafkaException
 from confluent_kafka.admin import AdminClient, NewTopic
 
 from event_driven.domain.commands import QueueConfig
+
+logger = logging.getLogger(__name__)
 
 
 class KafkaInitQueues:
@@ -22,17 +25,17 @@ class KafkaInitQueues:
         try:
             future.result(timeout=timeout)
             partitions = next(t.num_partitions for t in queues if t.queue_name == topic_name)
-            print(f"Topic '{topic_name}' created successfully with {partitions} partitions.")
+            logger.info("Topic '%s' created successfully with %d partitions.", topic_name, partitions)
         except KafkaException as ke:
             err = ke.args[0]
             if err.code() == KafkaError.TOPIC_ALREADY_EXISTS:
-                print(f"Topic '{topic_name}' already exists. Skipping creation.")
+                logger.warning("Topic '%s' already exists. Skipping creation.", topic_name)
             elif err.code() == KafkaError.INVALID_REPLICATION_FACTOR:
-                print("Replication factor is higher than available brokers.")
+                logger.warning("Replication factor is higher than available brokers.")
             else:
-                print(f"Kafka server error [{err.code()}]: {err.str()}")
+                logger.error("Kafka server error [%d]: %s", err.code(), err.str())
         except FuturesTimeoutError:
-            print(f"Timed out waiting for Kafka to create topic '{topic_name}'.")
+            logger.error("Timed out waiting for Kafka to create topic '%s'.", topic_name)
 
     @staticmethod
     def create_kafka_topic(cfg: QueueConfig) -> NewTopic:
@@ -55,15 +58,15 @@ class KafkaInitQueues:
     def _handle_deletion_future(topic_name: str, future: Future, timeout: int):
         try:
             future.result(timeout=timeout)
-            print(f"Topic '{topic_name}' deleted successfully.")
+            logger.info("Topic '%s' deleted successfully.", topic_name)
         except KafkaException as ke:
             err = ke.args[0]
             if err.code() == KafkaError.UNKNOWN_TOPIC_OR_PART:
-                print(f"Topic '{topic_name}' does not exist.")
+                logger.warning("Topic '%s' does not exist.", topic_name)
             else:
-                print(f"Kafka error [{err.code()}]: {err.str()}")
+                logger.error("Kafka error [%d]: %s", err.code(), err.str())
         except FuturesTimeoutError:
-            print(f"Timed out waiting to delete '{topic_name}'.")
+            logger.exception("Timed out waiting to delete '%s'.", topic_name)
 
     def delete_queues(self, topic_names: list[str], server_url: str):
         """Delete topics from Kafka"""
