@@ -3,7 +3,6 @@
 import threading
 from collections.abc import Sequence
 
-from event_driven.application.handlers.topics import receive_events
 from event_driven.domain.events import AbstractEvent
 from event_driven.domain.ports import AbstractReceiver
 
@@ -22,4 +21,4 @@ class ListenerThread(threading.Thread):
 
     def run(self) -> None:
         """Receive events from Kafka and put them in the in-memory queue."""
-        receive_events(self.receiver, self.event_classes)
+        self.receiver.start_listening(self.event_classes)
