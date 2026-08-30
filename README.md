@@ -30,11 +30,12 @@ uv run python -m event_driven.consumer
 
 - Some pylint issues will be acceptable, usually, too many stataments, arguments, access to a protected member (in tests mainly)
 
-- Unacceptable issues:
+- Unacceptable issues/ actions:
     - Magic values (define a _CONSTANT)
     - Redefining a value from outer scope (in pytest you can use request: FixtureRequest)
     - Type errors (avoid casting whenever possible)
     - Ruff problems
+    - Removing types to bypass type checker
     - Undefined elements
     - Critical / error pylint elements
 
