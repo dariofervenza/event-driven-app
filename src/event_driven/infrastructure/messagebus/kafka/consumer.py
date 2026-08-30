@@ -1,6 +1,7 @@
 """Receives an event"""
 
 import json
+import logging
 from collections.abc import Sequence
 from time import sleep
 
@@ -9,6 +10,8 @@ from pydantic import BaseModel, ValidationError
 
 from event_driven.domain.events import AbstractEvent
 from event_driven.domain.ports import AbstractQueue
+
+logger = logging.getLogger(__name__)
 
 
 class KafkaReceiverConfig(BaseModel):
@@ -55,13 +58,13 @@ class KafkaReceiver:
         """Tries one time to receive a message. Returns True if an error is produced."""
         msg: Message | None = self.consumer.poll(timeout=self.poll_timeout)
         if msg is None:
-            print(f"No message, sleeping {self.poll_timeout} seconds")
+            logger.debug("No message, sleeping %s seconds", self.poll_timeout)
             sleep(self.poll_timeout)
             return False
         if err := msg.error():
             if err.code() == 1006:  # KafkaError._PARTITION_EOF
                 return False
-            print(f"Consumer error: {err}")
+            logger.error("Consumer error: %s", err)
             return True
         value = msg.value()
         raw_payload = value.decode("utf-8") if value else "{}"
@@ -72,13 +75,13 @@ class KafkaReceiver:
             self.consumer.commit(message=msg, asynchronous=False)
             return False
         except ValidationError as ve:
-            print(f"Schema validation failed! Bad payload: {raw_payload}\nError: {ve}")
+            logger.exception("Schema validation failed! Bad payload: %s\nError: %s", raw_payload, ve)
             self.consumer.commit(message=msg, asynchronous=False)
             return True
 
     def start_listening(self, event_classes: Sequence[type[AbstractEvent]]):
         """Start the receiver"""
-        print("Listening for Pydantic events...")
+        logger.info("Listening for Pydantic events...")
         try:
             while True:
                 if self._check_once(event_classes):

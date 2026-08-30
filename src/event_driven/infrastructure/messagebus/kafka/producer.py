@@ -1,8 +1,12 @@
 """Sends events to one queue"""
 
+import logging
+
 from confluent_kafka import KafkaError, Message, Producer
 
 from event_driven.domain.events import AbstractEvent
+
+logger = logging.getLogger(__name__)
 
 
 class KafkaProducer:
@@ -14,9 +18,9 @@ class KafkaProducer:
 
     def _delivery_report(self, err: KafkaError | None, msg: Message):
         if err is not None:
-            print(f"Delivery failed: {err}")
+            logger.error("Delivery failed: %s", err)
         else:
-            print(f"Event sent to {msg.topic()} [{msg.partition()}] @ offset {msg.offset()}")
+            logger.debug("Event sent to %s [%d] @ offset %d", msg.topic(), msg.partition(), msg.offset())
 
     def send_event(self, topic: str, event: AbstractEvent):
         """Serialize Pydantic object to JSON and produce to Kafka"""
@@ -28,9 +32,10 @@ class KafkaProducer:
                 value=json_payload,
                 callback=self._delivery_report,
             )
+            logger.info("Sent event %s", event.event_id)
             self.producer.poll(0)
         except BufferError:
-            print("Local queue full, flushing...")
+            logger.warning("Local queue full, flushing...")
             self.flush()
 
     def flush(self):

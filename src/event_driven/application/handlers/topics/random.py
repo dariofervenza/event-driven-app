@@ -1,5 +1,6 @@
 """Produce or consume test events"""
 
+import logging
 from random import randint
 from time import sleep
 
@@ -7,6 +8,8 @@ from event_driven.domain.events import TestEvent
 from event_driven.domain.ports import AbstractProducer
 
 from .send_kafka import send_event
+
+logger = logging.getLogger(__name__)
 
 _RANDOM_MAX_USERS = 9999
 _RAMDOM_MAX_KEY = 4500
@@ -29,7 +32,7 @@ def periodically_send_random_test_event(wait_time: int, topic: str, producer: Ab
     while True:
         try:
             send_random_test_event(topic, producer)
-            print(f"Sent message, sleeping {wait_time} seconds")
+            logger.info("Sent message, sleeping %d seconds", wait_time)
             sleep(wait_time)
         except KeyboardInterrupt:
             break
