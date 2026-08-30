@@ -3,8 +3,12 @@
 from collections.abc import Sequence
 from typing import Protocol
 
+from pydantic import BaseModel
+
 from event_driven.domain.commands import QueueConfig
 from event_driven.domain.events import AbstractEvent
+
+type QueuePayload = str | dict | list | BaseModel
 
 
 class AbstractInitQueues(Protocol):
@@ -32,3 +36,40 @@ class AbstractProducer(Protocol):
 
     def flush(self):
         """Abstract method contract to flush events"""
+
+
+class AbstractInMemoryQueue(Protocol):
+    """Abstract class with the contract to use in-memory queues."""
+
+    def put(self, element: QueuePayload) -> None:
+        """Sends an element to the in memory queue."""
+
+    def get(self) -> QueuePayload:
+        """Extracts one element from the queue."""
+
+    def task_done(self) -> None:
+        """Signals that the former queued task is complete."""
+
+
+class AbstractListener(Protocol):
+    """A background listener that, once started, receives events from Kafka into the in-memory queue."""
+
+    def start(self) -> None:
+        """Start the listener (runs in the background)."""
+
+
+class AbstractHandler(Protocol):
+    """A handler that continuously processes events from the in-memory queue."""
+
+    def handle(self) -> None:
+        """Process events from the in-memory queue."""
+
+
+class AbstractQueue(Protocol):
+    """Abstract class with the contract to use queues (normal or asyncio or others)"""
+
+    def put(self, element: QueuePayload) -> None:
+        """Sends an element to the queue."""
+
+    def get(self) -> QueuePayload:
+        """Extracts one element from the queue."""

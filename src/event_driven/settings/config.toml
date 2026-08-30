@@ -1,8 +1,26 @@
 [kafka_server]
     server_url = "localhost:9092"
-    queue_creation_timeout = 5
 
     [[kafka_server.queues]]
         queue_name = "test_queue"
         num_partitions = 3
         replication_factor = 1
+
+[kafka_server.init]
+    queue_creation_timeout = 5
+    create_queues = true
+    delete_queues = false
+
+[kafka_server.producer]
+    producer_wait_time = 8
+
+[kafka_server.consume]
+    group_id = "001"
+    auto_commit = false
+    max_wait_time = 300000
+    session_timeout = 10000
+    poll_timeout = 1.0
+    default_offset = "earliest"
+
+[application]
+    get_inmemory_timeout = 1.0

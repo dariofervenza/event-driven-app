@@ -20,10 +20,12 @@ def fake_initializator_fixture() -> AbstractInitQueues:
         def __init__(self):
             self.registered_topics = {}
 
-        def create_queues(self, queues: list[QueueConfig], server_url: str):
+        def create_queues(self, queues: list[QueueConfig], server_url: str) -> None:
+            """Store the queues for the given server URL."""
             self.registered_topics[server_url] = queues
 
-        def delete_queues(self, topic_names: list[str], server_url: str):
+        def delete_queues(self, topic_names: list[str], server_url: str) -> None:
+            """Remove the queues for the given server URL."""
             del topic_names
             if server_url in self.registered_topics:
                 self.registered_topics.pop(server_url)
@@ -31,8 +33,8 @@ def fake_initializator_fixture() -> AbstractInitQueues:
     return FakeInitQueues()
 
 
-def test_topic_creaton(request: pytest.FixtureRequest):
-    """Tests that applicaiton handler actually calls the creation contract method"""
+def test_topic_creation(request: pytest.FixtureRequest) -> None:
+    """Tests that application handler actually calls the creation contract method."""
     initializator = request.getfixturevalue("fake_initializator_fixture")
     queues = [QueueConfig(queue_name="test", num_partitions=1, replication_factor=1)]
     command = CreateTopicsCommand(queues=queues, server_url="dummy")
@@ -41,8 +43,8 @@ def test_topic_creaton(request: pytest.FixtureRequest):
     assert initializator.registered_topics["dummy"] == queues
 
 
-def test_topic_deletion(request: pytest.FixtureRequest):
-    """Tests that applicaiton handler actually calls the creation contract method"""
+def test_topic_deletion(request: pytest.FixtureRequest) -> None:
+    """Tests that application handler actually calls the deletion contract method."""
     initializator = request.getfixturevalue("fake_initializator_fixture")
     queues = [
         QueueConfig(queue_name="test", num_partitions=1, replication_factor=1),
