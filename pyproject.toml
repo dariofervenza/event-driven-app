@@ -36,6 +36,15 @@ test = [
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_functions = ["test_*"]
+markers = [
+    "asyncio: tests that run on the asyncio event loop (reserved for future use)",
+    "api: tests for the api layer (reserved for future use)",
+    "domain: domain-layer tests",
+    "infrastructure: infrastructure-layer tests",
+    "application: application-layer tests",
+    "unit: pure unit tests that need no external infrastructure",
+    "integration: end-to-end flow that needs a live Kafka broker",
+]
 addopts = [
     "--cov=src",
     "--cov-report=term-missing",

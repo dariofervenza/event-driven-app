@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 class TestHandler:
     """Handler that continuously receives events from the in-memory queue and prints them."""
 
+    __test__ = False
+
     def __init__(self, queue: AbstractInMemoryQueue) -> None:
         self.queue = queue
 

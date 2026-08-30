@@ -1,6 +1,9 @@
 """Dummy test module"""
 
+import pytest
 
-def test_dummy():
+
+@pytest.mark.unit
+def test_dummy() -> None:
     """Always passes"""
     assert True
