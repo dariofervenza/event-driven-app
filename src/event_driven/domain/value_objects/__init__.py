@@ -1,7 +1,11 @@
 """Value objects for the ordering domain."""
 
 from .common import Money
-from .orders import DeliveryFee, MenuItem, OrderLine, Payment, PaymentStatus, Rating
+from .delivery import DeliveryFee
+from .menu import MenuItem
+from .ordering import OrderLine
+from .payment import Payment, PaymentStatus
+from .rating import Rating
 
 __all__ = [
     "DeliveryFee",
