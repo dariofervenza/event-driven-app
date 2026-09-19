@@ -28,6 +28,8 @@ uv run python -m event_driven.consumer
 
 - Prefer real issue fix or accept it rather than ignoring it and, hence, burying it.
 
+- Every pydantic `BaseModel` field must declare a per-field `description` via `Field(description=...)`.
+
 - Some pylint issues will be acceptable, usually, too many stataments, arguments, access to a protected member (in tests mainly)
 
 - Unacceptable issues/ actions:

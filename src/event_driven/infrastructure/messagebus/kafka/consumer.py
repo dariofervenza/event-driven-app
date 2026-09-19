@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from time import sleep
 
 from confluent_kafka import Consumer, Message
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 from event_driven.domain.events import AbstractEvent
 from event_driven.domain.ports import AbstractQueue
@@ -17,13 +17,13 @@ logger = logging.getLogger(__name__)
 class KafkaReceiverConfig(BaseModel):
     """Config class for a kafka consumer."""
 
-    server_url: str
-    group_id: str
-    auto_commit: bool = False
-    max_wait_time: int = 300000
-    session_timeout: int = 10000
-    poll_timeout: float = 1.0
-    default_offset: str = "earliest"
+    server_url: str = Field(description="The Kafka server URL.")
+    group_id: str = Field(description="The consumer group id.")
+    auto_commit: bool = Field(default=False, description="Whether to auto-commit offsets.")
+    max_wait_time: int = Field(default=300000, description="The maximum wait time in milliseconds.")
+    session_timeout: int = Field(default=10000, description="The session timeout in milliseconds.")
+    poll_timeout: float = Field(default=1.0, description="The poll timeout in seconds.")
+    default_offset: str = Field(default="earliest", description="The default offset (earliest or latest).")
 
     @property
     def consumer_specs(self) -> dict:

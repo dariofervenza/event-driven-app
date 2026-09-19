@@ -24,3 +24,5 @@
 
 [application]
     get_inmemory_timeout = 1.0
+    rating_min_score = 1
+    rating_max_score = 5
